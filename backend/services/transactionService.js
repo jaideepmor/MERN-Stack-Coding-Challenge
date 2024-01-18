@@ -95,4 +95,80 @@ exports.getStatistics = async (month) => {
   }
 };
 
-// Other service actions for statistics, bar chart, and pie chart
+exports.getBarChartDataByMonth = async (month) => {
+  try {
+    // Calculate price ranges and count of items in each range
+    const barChartData = await Transaction.aggregate([
+      {
+        $match: {
+          dateOfSale: { $regex: new RegExp(`\\b${month}\\b`, 'i') },
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          range0to100: { $sum: { $cond: [{ $lte: ['$price', 100] }, 1, 0] } },
+          range101to200: { $sum: { $cond: [{ $and: [{ $gt: ['$price', 100] }, { $lte: ['$price', 200] }] }, 1, 0] } },
+          range201to300: { $sum: { $cond: [{ $and: [{ $gt: ['$price', 200] }, { $lte: ['$price', 300] }] }, 1, 0] } },
+          range301to400: { $sum: { $cond: [{ $and: [{ $gt: ['$price', 300] }, { $lte: ['$price', 400] }] }, 1, 0] } },
+          range401to500: { $sum: { $cond: [{ $and: [{ $gt: ['$price', 400] }, { $lte: ['$price', 500] }] }, 1, 0] } },
+          range501to600: { $sum: { $cond: [{ $and: [{ $gt: ['$price', 500] }, { $lte: ['$price', 600] }] }, 1, 0] } },
+          range601to700: { $sum: { $cond: [{ $and: [{ $gt: ['$price', 600] }, { $lte: ['$price', 700] }] }, 1, 0] } },
+          range701to800: { $sum: { $cond: [{ $and: [{ $gt: ['$price', 700] }, { $lte: ['$price', 800] }] }, 1, 0] } },
+          range801to900: { $sum: { $cond: [{ $and: [{ $gt: ['$price', 800] }, { $lte: ['$price', 900] }] }, 1, 0] } },
+          range901above: { $sum: { $cond: [{ $gt: ['$price', 900] }, 1, 0] } },
+        },
+      },
+    ]);
+
+    // Extract the counts from the result
+    const counts = {
+      '0-100': barChartData[0]?.range0to100 || 0,
+      '101-200': barChartData[0]?.range101to200 || 0,
+      '201-300': barChartData[0]?.range201to300 || 0,
+      '301-400': barChartData[0]?.range301to400 || 0,
+      '401-500': barChartData[0]?.range401to500 || 0,
+      '501-600': barChartData[0]?.range501to600 || 0,
+      '601-700': barChartData[0]?.range601to700 || 0,
+      '701-800': barChartData[0]?.range701to800 || 0,
+      '801-900': barChartData[0]?.range801to900 || 0,
+      '901-above': barChartData[0]?.range901above || 0,
+    };
+
+    return counts;
+  } catch (error) {
+    console.error('Error fetching bar chart data:', error);
+    throw new Error('Internal Server Error');
+  }
+};
+
+
+exports.getPieChartDataByMonth = async (month) => {
+  try {
+    // Calculate unique categories and count of items in each category
+    const pieChartData = await Transaction.aggregate([
+      {
+        $match: {
+          dateOfSale: { $regex: new RegExp(`\\b${month}\\b`, 'i') },
+        },
+      },
+      {
+        $group: {
+          _id: '$category',
+          count: { $sum: 1 },
+        },
+      },
+    ]);
+
+    // Transform the result to the desired format
+    const formattedChartData = pieChartData.reduce((result, data) => {
+      result[data._id] = data.count;
+      return result;
+    }, {});
+
+    return formattedChartData;
+  } catch (error) {
+    console.error('Error fetching pie chart data:', error);
+    throw new Error('Internal Server Error');
+  }
+};

@@ -30,7 +30,7 @@ exports.getStatistics = async (req, res) => {
         // Validate and convert the month parameter
         const monthIndex = parseInt(month);
         if (isNaN(monthIndex) || monthIndex < 1 || monthIndex > 12) {
-        return res.status(400).json({ error: 'Invalid month parameter' });
+            return res.status(400).json({ error: 'Invalid month parameter' });
         }
   
         // Get statistics from the service
@@ -41,6 +41,44 @@ exports.getStatistics = async (req, res) => {
         console.error(error);
         res.status(500).json({ error: 'Internal Server Error' });
     }
-  };
+};
 
-// Other controller actions for statistics, bar chart, and pie chart
+exports.getBarChartData = async (req, res) => {
+    try {
+        const { month } = req.query;
+  
+        // Validate and convert the month parameter
+        const monthIndex = parseInt(month);
+        if (isNaN(monthIndex) || monthIndex < 1 || monthIndex > 12) {
+            return res.status(400).json({ error: 'Invalid month parameter' });
+        }
+  
+        // Get bar chart data from the service
+        const barChartData = await transactionService.getBarChartDataByMonth(month);
+    
+        res.status(200).json(barChartData);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+};
+
+exports.getPieChartData = async (req, res) => {
+    try {
+        const { month } = req.query;
+  
+        // Validate and convert the month parameter
+        const monthIndex = parseInt(month);
+        if (isNaN(monthIndex) || monthIndex < 1 || monthIndex > 12) {
+            return res.status(400).json({ error: 'Invalid month parameter' });
+        }
+  
+        // Get pie chart data from the service
+        const pieChartData = await transactionService.getPieChartDataByMonth(month);
+    
+        res.status(200).json(pieChartData);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+  };
