@@ -81,4 +81,34 @@ exports.getPieChartData = async (req, res) => {
         console.error(error);
         res.status(500).json({ error: 'Internal Server Error' });
     }
-  };
+};
+
+
+exports.getCombinedData = async (req, res) => {
+    try {
+        const { month } = req.query;
+
+        // Validate and convert the month parameter
+        const monthIndex = parseInt(month);
+        if (isNaN(monthIndex) || monthIndex < 1 || monthIndex > 12) {
+            return res.status(400).json({ error: 'Invalid month parameter' });
+        }
+
+        // Fetch data from all three APIs
+        const statisticsData = await transactionService.getStatistics(month);
+        const barChartData = await transactionService.getBarChartDataByMonth(month);
+        const pieChartData = await transactionService.getPieChartDataByMonth(month);
+
+        // Combine the responses
+        const combinedData = {
+            statisticsData,
+            barChartData,
+            pieChartData,
+        };
+
+        res.status(200).json(combinedData);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+};

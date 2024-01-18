@@ -4,15 +4,15 @@ const Transaction = require('../models/transactionModel');
 exports.initializeDatabase = async () => {
   // Service logic for initializing the database
   try {
-      const response = await axios.get('https://s3.amazonaws.com/roxiler.com/product_transaction.json');
-      const data = response.data;
+    const response = await axios.get('https://s3.amazonaws.com/roxiler.com/product_transaction.json');
+    const data = response.data;
 
-      await Transaction.deleteMany({});
-      await Transaction.insertMany(data);
+    await Transaction.deleteMany({});
+    await Transaction.insertMany(data);
 
-      return { message: 'Database initialized successfully' };
+    return { message: 'Database initialized successfully' };
   } catch (error) {
-      throw new Error('Error initializing database');
+    throw new Error('Error initializing database');
   }
 };
 
