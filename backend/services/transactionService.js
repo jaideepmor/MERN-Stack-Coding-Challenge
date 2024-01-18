@@ -16,7 +16,7 @@ exports.initializeDatabase = async () => {
   }
 };
 
-exports.listTransactions = async (month, search = '', page = 1) => {
+exports.listTransactions = async (month, search, page) => {
   // Service logic for fetching transactions based on parameters
   try {
     let query = {};
