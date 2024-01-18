@@ -1,6 +1,21 @@
 const axios = require('axios');
 const Transaction = require('../models/transactionModel');
 
+exports.initializeDatabase = async () => {
+  // Service logic for initializing the database
+  try {
+      const response = await axios.get('https://s3.amazonaws.com/roxiler.com/product_transaction.json');
+      const data = response.data;
+
+      await Transaction.deleteMany({});
+      await Transaction.insertMany(data);
+
+      return { message: 'Database initialized successfully' };
+  } catch (error) {
+      throw new Error('Error initializing database');
+  }
+};
+
 exports.listTransactions = async (month, search = '', page = 1) => {
   // Service logic for fetching transactions based on parameters
   try {
@@ -45,19 +60,39 @@ exports.listTransactions = async (month, search = '', page = 1) => {
   }
 };
 
-exports.initializeDatabase = async () => {
-    // Service logic for initializing the database
-    try {
-        const response = await axios.get('https://s3.amazonaws.com/roxiler.com/product_transaction.json');
-        const data = response.data;
+exports.getStatistics = async (month) => {
+  try {
+    // Calculate total sale amount
+    const totalSaleAmount = await Transaction.aggregate([
+      {
+        $match: {
+          dateOfSale: { $regex: new RegExp(`\\b${month}\\b`, 'i') },
+        },
+      },
+      { $group: { _id: null, total: { $sum: '$price' } } },
+    ]);
 
-        await Transaction.deleteMany({});
-        await Transaction.insertMany(data);
+    // Calculate total sold items
+    const totalSoldItems = await Transaction.countDocuments({
+      dateOfSale: { $regex: new RegExp(`\\b${month}\\b`, 'i') },
+      sold: true,
+    });
 
-        return { message: 'Database initialized successfully' };
-    } catch (error) {
-        throw new Error('Error initializing database');
-    }
+    // Calculate total unsold items
+    const totalUnsoldItems = await Transaction.countDocuments({
+      dateOfSale: { $regex: new RegExp(`\\b${month}\\b`, 'i') },
+      sold: false,
+    });
+
+    return {
+      totalSaleAmount: totalSaleAmount[0]?.total || 0,
+      totalSoldItems,
+      totalUnsoldItems,
+    };
+  } catch (error) {
+    console.error('Error in getStatistics service:', error);
+    throw new Error('Error fetching statistics');
+  }
 };
 
 // Other service actions for statistics, bar chart, and pie chart
