@@ -62,11 +62,14 @@ exports.listTransactions = async (month, search = '', page = 1) => {
 
 exports.getStatistics = async (month) => {
   try {
+    // Add a zero-padding for single-digit months
+    const paddedMonth = month.padStart(2, '0');
+
     // Calculate total sale amount
     const totalSaleAmount = await Transaction.aggregate([
       {
         $match: {
-          dateOfSale: { $regex: new RegExp(`\\b${month}\\b`, 'i') },
+          dateOfSale: { $regex: new RegExp(`\\b${paddedMonth}\\b`, 'i') },
         },
       },
       { $group: { _id: null, total: { $sum: '$price' } } },
@@ -74,13 +77,13 @@ exports.getStatistics = async (month) => {
 
     // Calculate total sold items
     const totalSoldItems = await Transaction.countDocuments({
-      dateOfSale: { $regex: new RegExp(`\\b${month}\\b`, 'i') },
+      dateOfSale: { $regex: new RegExp(`\\b${paddedMonth}\\b`, 'i') },
       sold: true,
     });
 
     // Calculate total unsold items
     const totalUnsoldItems = await Transaction.countDocuments({
-      dateOfSale: { $regex: new RegExp(`\\b${month}\\b`, 'i') },
+      dateOfSale: { $regex: new RegExp(`\\b${paddedMonth}\\b`, 'i') },
       sold: false,
     });
 
@@ -97,11 +100,14 @@ exports.getStatistics = async (month) => {
 
 exports.getBarChartDataByMonth = async (month) => {
   try {
+    // Add a zero-padding for single-digit months
+    const paddedMonth = month.padStart(2, '0');
+
     // Calculate price ranges and count of items in each range
     const barChartData = await Transaction.aggregate([
       {
         $match: {
-          dateOfSale: { $regex: new RegExp(`\\b${month}\\b`, 'i') },
+          dateOfSale: { $regex: new RegExp(`\\b${paddedMonth}\\b`, 'i') },
         },
       },
       {
@@ -145,11 +151,14 @@ exports.getBarChartDataByMonth = async (month) => {
 
 exports.getPieChartDataByMonth = async (month) => {
   try {
+    // Add a zero-padding for single-digit months
+    const paddedMonth = month.padStart(2, '0');
+
     // Calculate unique categories and count of items in each category
     const pieChartData = await Transaction.aggregate([
       {
         $match: {
-          dateOfSale: { $regex: new RegExp(`\\b${month}\\b`, 'i') },
+          dateOfSale: { $regex: new RegExp(`\\b${paddedMonth}\\b`, 'i') },
         },
       },
       {
