@@ -1,10 +1,11 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const transactionRoutes = require('../backend/routes/transactionRoutes');
-const uri = "mongodb+srv://jaideepmor74:t0d%40y%2417@jaideep.az1sqez.mongodb.net/Jaideep?retryWrites=true&w=majority";
+require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 3001;
+const uri = process.env.MONGODB_URI;
 
 mongoose.connect(uri);
 
