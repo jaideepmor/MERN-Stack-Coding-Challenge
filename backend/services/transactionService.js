@@ -20,22 +20,6 @@ exports.listTransactions = async (month, search, page) => {
   // Service logic for fetching transactions based on parameters
   try {
     let query = {};
-    
-    if (month) {
-      const startDate = new Date(`${month}-01T00:00:00.000Z`);
-      const endDate = new Date(`${month}-31T23:59:59.999Z`);
-
-      // Check if startDate and endDate are valid dates
-      if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
-        throw new Error('Invalid date range');
-      }
-
-      query.dateOfSale = {
-        $gte: startDate,
-        $lte: endDate,
-      };
-    }
-
     const regex = new RegExp(search, 'i');
 
     query.$or = [
@@ -47,6 +31,12 @@ exports.listTransactions = async (month, search, page) => {
     const numericSearch = parseFloat(search);
     if (!isNaN(numericSearch)) {
       query.$or.push({ price: { $gte: numericSearch, $lt: numericSearch + 1 } });
+    }
+
+    // If month is not empty, add the dateOfSale condition to the query
+    if (month) {
+      const paddedMonth = month.padStart(2, '0');
+      query.dateOfSale = { $regex: new RegExp(`\\b${paddedMonth}\\b`, 'i') };
     }
 
     const transactions = await Transaction.find(query)
