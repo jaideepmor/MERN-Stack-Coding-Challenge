@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
-import DataTable from "../../Components/DataTable";
+import DataTable from "../../Components/Transactions";
 import "./style.css";
 import { Dropdown, InputGroup, Form, Button } from "react-bootstrap";
-import DataCard from "../../Components/DataCard";
+import DataCard from "../../Components/Statistics";
 import DataGraph from "../../Components/DataGraph";
 import {
   getBarChartData,
@@ -25,29 +25,43 @@ const months = [
   { name: "December", number: 12 },
 ];
 
-function Home() {
-  const [selectedMonth, setselectedMonth] = useState(null);
+export function Home() {
+  const [selectedMonth, setselectedMonth] = useState(1);
   const [pageSize, setpageSize] = useState(10);
   const [pageNumber, setpageNumber] = useState(1);
   const [searchText, setsearchText] = useState(null);
   const [barChartData, setbarChartData] = useState();
   const [statisticsData, setstatisticsData] = useState();
-  const [tableData, settableData] = useState();
+  const [translations, setTranslations] = useState();
+
+  console.log('translations', translations);
 
   // Searches data from API.
-  const SearchData = () => {
-    settableData(getData(searchText, selectedMonth, pageNumber, pageSize));
+  const SearchData = async () => {
+    const res = await getData(searchText, selectedMonth, pageNumber, pageSize);
+    setTranslations(res);
+  };
+
+  const StatisticsData = async () => {
+    const res = await getStatistics(selectedMonth);
+    setstatisticsData(res);
+  };
+
+  const BarChartData = async () => {
+    const res = await getBarChartData(selectedMonth);
+    setbarChartData(res);
   };
 
   // Fetch data everyTime pageNumberChanges changes.
   useEffect(() => {
-    settableData(getData(searchText, selectedMonth, pageNumber, pageSize));
+    SearchData();
   }, [pageNumber]);
 
   // Fetch data everyTime month  changes.
   useEffect(() => {
-    setbarChartData(getBarChartData(selectedMonth));
-    setstatisticsData(getStatistics(selectedMonth));
+    SearchData();
+    StatisticsData();
+    BarChartData();
   }, [selectedMonth]);
 
   return (
@@ -89,9 +103,9 @@ function Home() {
           </Dropdown>
         </div>
 
-        {tableData && (
+        {translations && (
           <div className="table-division">
-            <DataTable data={tableData} />
+            <DataTable data={translations} />
 
             <div className="horizantal-flex justify-space-between">
               <div>
@@ -128,7 +142,7 @@ function Home() {
       {statisticsData && (
         <div className="vertical-flex division">
           <div>
-            <h4>Statistics - {selectedMonth}</h4>
+            <h4>Statistics - {months.find(m => m.number == selectedMonth).name}</h4>
           </div>
           <div className="horizantal-flex justify-center">
             <DataCard data={statisticsData} />
@@ -139,7 +153,7 @@ function Home() {
       {barChartData && (
         <div className="vertical-flex division">
           <div>
-            <h4>Bar Chart Stats - {selectedMonth}</h4>
+            <h4>Bar Chart Stats - {months.find(m => m.number == selectedMonth).name}</h4>
           </div>
           <div className="horizantal-flex justify-center">
             <DataGraph data={barChartData} />

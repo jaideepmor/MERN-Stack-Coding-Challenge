@@ -4,7 +4,8 @@ import { Bar } from "react-chartjs-2";
 import "./style.css";
 
 function DataGraph({ data }) {
-  if (!data) {
+  console.log(data);
+  if (data) {
     return null;
   }
 
