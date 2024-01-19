@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from "react";
-import DataTable from "../../Components/Transactions";
+import Transactions from "../../Components/Transactions";
 import "./style.css";
 import { Dropdown, InputGroup, Form, Button } from "react-bootstrap";
-import DataCard from "../../Components/Statistics";
-import DataGraph from "../../Components/DataGraph";
+import Statistics from "../../Components/Statistics";
+import BarChart from "../../Components/BarChart";
 import {
   getBarChartData,
-  getData,
+  getTransactions,
   getStatistics,
-} from "../../Services/DataService";
+} from "../../Services/Transaction";
 
 const months = [
   { name: "January", number: 1 },
@@ -26,43 +26,41 @@ const months = [
 ];
 
 export function Home() {
-  const [selectedMonth, setselectedMonth] = useState(1);
-  const [pageSize, setpageSize] = useState(10);
-  const [pageNumber, setpageNumber] = useState(1);
-  const [searchText, setsearchText] = useState(null);
-  const [barChartData, setbarChartData] = useState();
-  const [statisticsData, setstatisticsData] = useState();
+  const [month, setMonth] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [page, setPage] = useState(1);
+  const [searchText, setSearchText] = useState(null);
+  const [barChartData, setBarChartData] = useState();
+  const [statisticsData, setStatisticsData] = useState();
   const [translations, setTranslations] = useState();
 
-  console.log('translations', translations);
-
   // Searches data from API.
-  const SearchData = async () => {
-    const res = await getData(searchText, selectedMonth, pageNumber, pageSize);
+  const TransactionsData = async () => {
+    const res = await getTransactions(searchText, month, page, pageSize);
     setTranslations(res);
   };
 
   const StatisticsData = async () => {
-    const res = await getStatistics(selectedMonth);
-    setstatisticsData(res);
+    const res = await getStatistics(month);
+    setStatisticsData(res);
   };
 
   const BarChartData = async () => {
-    const res = await getBarChartData(selectedMonth);
-    setbarChartData(res);
+    const res = await getBarChartData(month);
+    setBarChartData(res);
   };
 
-  // Fetch data everyTime pageNumberChanges changes.
+  // Fetch data everyTime pageChanges changes.
   useEffect(() => {
-    SearchData();
-  }, [pageNumber]);
+    TransactionsData();
+  }, [page]);
 
   // Fetch data everyTime month  changes.
   useEffect(() => {
-    SearchData();
+    TransactionsData();
     StatisticsData();
     BarChartData();
-  }, [selectedMonth]);
+  }, [month]);
 
   return (
     <div className="table-container">
@@ -73,12 +71,12 @@ export function Home() {
               placeholder="Search Transactions"
               aria-label="Search Transactions"
               aria-describedby="basic-addon2"
-              onChange={(e) => setsearchText(e.target.value)}
+              onChange={(e) => setSearchText(e.target.value)}
             />
             <Button
               variant="primary"
               id="button-addon2"
-              onClick={() => SearchData()}
+              onClick={() => TransactionsData()}
             >
               Search
             </Button>
@@ -93,7 +91,7 @@ export function Home() {
                 return (
                   <Dropdown.Item
                     key={index}
-                    onClick={(e) => setselectedMonth(month.number)}
+                    onClick={(e) => setMonth(month.number)}
                   >
                     {month.name}
                   </Dropdown.Item>
@@ -105,20 +103,18 @@ export function Home() {
 
         {translations && (
           <div className="table-division">
-            <DataTable data={translations} />
+            <Transactions data={translations} />
 
             <div className="horizantal-flex justify-space-between">
               <div>
-                <p>Page No : {pageNumber}</p>
+                <p>Page No : {page}</p>
               </div>
               <div>
                 <ul className="horizantal-list">
                   <li>
                     <button
                       className="button"
-                      onClick={() =>
-                        pageNumber && setpageNumber(pageNumber - 1)
-                      }
+                      onClick={() => page && setPage(page - 1)}
                     >
                       previous
                     </button>
@@ -126,7 +122,7 @@ export function Home() {
                   <li>
                     <button
                       className="button"
-                      onClick={() => setpageNumber(pageNumber + 1)}
+                      onClick={() => setPage(page + 1)}
                     >
                       next
                     </button>
@@ -142,10 +138,10 @@ export function Home() {
       {statisticsData && (
         <div className="vertical-flex division">
           <div>
-            <h4>Statistics - {months.find(m => m.number == selectedMonth).name}</h4>
+            <h4>Statistics - {months.find((m) => m.number == month).name}</h4>
           </div>
           <div className="horizantal-flex justify-center">
-            <DataCard data={statisticsData} />
+            <Statistics data={statisticsData} />
           </div>
         </div>
       )}
@@ -153,10 +149,12 @@ export function Home() {
       {barChartData && (
         <div className="vertical-flex division">
           <div>
-            <h4>Bar Chart Stats - {months.find(m => m.number == selectedMonth).name}</h4>
+            <h4>
+              Bar Chart Stats - {months.find((m) => m.number == month).name}
+            </h4>
           </div>
           <div className="horizantal-flex justify-center">
-            <DataGraph data={barChartData} />
+            <BarChart data={barChartData} />
           </div>
         </div>
       )}

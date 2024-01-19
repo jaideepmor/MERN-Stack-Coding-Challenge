@@ -3,12 +3,13 @@ import "./style.css";
 import { Table } from "react-bootstrap";
 
 function DataCard({ data }) {
+  console.log(data);
   if (!data) {
-    return null;
+    return <div>Loading...</div>; // or any other logic for handling the absence of data
   }
 
   // Converting to required data form.
-  const keys = Object.keys(data);
+  const keys = Object.keys(data.data);
 
   return (
     <div>
@@ -18,7 +19,7 @@ function DataCard({ data }) {
             return (
               <tr key={index}>
                 <td>{key}</td>
-                <td>{data[key]}</td>
+                <td>{data.data[key]}</td>
               </tr>
             );
           })}
